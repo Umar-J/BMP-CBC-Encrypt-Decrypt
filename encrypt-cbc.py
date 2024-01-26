@@ -5,7 +5,6 @@ import secrets
 
 BLOCK_SIZE = AES.block_size
 
-
 def cbc_encrypt(key: bytes, iv: bytes, img: bytes) -> bytes:
     """
     This function encrypts the image using AES in CBC mode.
@@ -58,9 +57,9 @@ def cbc_decrypt(key: bytes, iv: bytes, img: bytes) -> bytes:
     return header + plaintext + trailing_bytes
 
 def checkImage():
-    image = input ("Please enter the filename of the .bmp image file:\n>")
+    image = input ("\nPlease enter the filename of the .bmp image file:\n>")
     if(image[-4:] != ".bmp"):
-            print("File is not a .bmp file\nExitting...")
+            print("File is not a .bmp file\nExiting...")
             exit(1)
     return image
 
@@ -69,7 +68,7 @@ def readImage(image):
         with open(image, "rb") as f:
             img = f.read()
     except:
-        print("File not found\nExitting...")
+        print("File not found\nExiting...")
         exit(1)
     return img
 
@@ -83,22 +82,31 @@ def encrypting():
     
     iv = get_random_bytes(BLOCK_SIZE)
     outputFile = imgName[:-4]+"_cbc.bmp"
-    print(outputFile)
+    
     with open(outputFile, "wb") as f:
         ciphertext = cbc_encrypt(key, iv, img)
         f.write(ciphertext)
-    print("Encrypted image saved as", outputFile)
-    print("IV:", iv.hex())
-    print("Key:", key.hex())
+    print("\nEncrypted image saved as", outputFile)
+    
+    # Export the keys securely
+    with open('keyfile', 'w') as kf:
+        kf.write(key.hex())
+    with open('ivfile', 'w') as ivf:
+        ivf.write(iv.hex())
+    print("\nKey and IV securely exported to keyfile and ivfile respectively")  
+    print("Key (hex) :", key.hex())
+    print("IV (hex) :", iv.hex())
+    
 def getHexInput(type):
-    print("Please enter the",type,"in hex format:")
+    print("\nPlease enter the",type,"in hex format:")
     key = input (">")
     try:
         key = bytes.fromhex(key)
     except ValueError:
-        print("Key is not in hex format\nExitting...")
+        print("Key is not in hex format\nExiting...")
         exit(1)
     return key
+
 def decrypting():   
     #decryption
     imgName = checkImage();
@@ -106,15 +114,15 @@ def decrypting():
     key = getHexInput("key")
     iv = getHexInput("IV")
     outputFile = imgName[:-4]+"_decrypted.bmp"
-    print("Decrypting...")
+    print("\nDecrypting...")
     with open(outputFile, "wb") as f:
         ciphertext = cbc_decrypt(key, iv, img)
         f.write(ciphertext)
-    print("Decrypted image saved as",outputFile)
+    print("\nDecrypted image saved as",outputFile)
         
 def controller():
     while (True):
-        choice = input("Would you like to encrypt(e) or decrypt(d) a file?\n(e/d):")
+        choice = input("\nWould you like to encrypt(e) or decrypt(d) a file?\n(e/d):")
         if choice == "e":
             encrypting();
         elif choice == "d":
@@ -124,6 +132,7 @@ def controller():
             break;
   
 if __name__ == "__main__":
+    print("\nCBC image encryptor/decryptor v0.6\nby Umar Jan (github.com/umar-j)")
     controller();   
 
     
