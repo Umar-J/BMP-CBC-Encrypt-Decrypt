@@ -36,6 +36,12 @@ def cbc_decrypt(key: bytes, iv: bytes, img: bytes) -> bytes:
     The header, body and trailing characters are concatenated and returned.
     """
     assert iv is not None
+    if len(key) != 16:
+        print("Incorrect key length (it must be 16 bytes long)")
+        exit(1)
+    if len(iv) != 16:
+        print("Incorrect IV length (it must be 16 bytes long)")
+        exit(1)
 
     # Separate the header from the body
     header = img[:54]
@@ -52,9 +58,9 @@ def cbc_decrypt(key: bytes, iv: bytes, img: bytes) -> bytes:
     return header + plaintext + trailing_bytes
 
 def checkImage():
-    image = input ("Please enter the filename of the .bmp image file:\n")
+    image = input ("Please enter the filename of the .bmp image file:\n>")
     if(image[-4:] != ".bmp"):
-            print("File is not a .bmp file")
+            print("File is not a .bmp file\nExitting...")
             exit(1)
     return image
 
@@ -63,7 +69,7 @@ def readImage(image):
         with open(image, "rb") as f:
             img = f.read()
     except:
-        print("File not found")
+        print("File not found\nExitting...")
         exit(1)
     return img
 
@@ -84,21 +90,27 @@ def encrypting():
     print("Encrypted image saved as", outputFile)
     print("IV:", iv.hex())
     print("Key:", key.hex())
-
+def getHexInput(type):
+    print("Please enter the",type,"in hex format:")
+    key = input (">")
+    try:
+        key = bytes.fromhex(key)
+    except ValueError:
+        print("Key is not in hex format\nExitting...")
+        exit(1)
+    return key
 def decrypting():   
     #decryption
-    img = checkImage();
-    img = readImage(img);
-    key = input ("Please enter the key:\n")
-    key = bytes.fromhex(key)
-    iv = input ("Please enter the IV:\n")
-    iv = bytes.fromhex(iv)
-    
+    imgName = checkImage();
+    img = readImage(imgName);
+    key = getHexInput("key")
+    iv = getHexInput("IV")
+    outputFile = imgName[:-4]+"_decrypted.bmp"
     print("Decrypting...")
-    print("Decrypted image saved as decrypted.bmp")
-    with open("decrypted.bmp", "wb") as f:
+    with open(outputFile, "wb") as f:
         ciphertext = cbc_decrypt(key, iv, img)
         f.write(ciphertext)
+    print("Decrypted image saved as",outputFile)
         
 def controller():
     while (True):
